@@ -1,0 +1,161 @@
+/*****************************************************
+ * Description pour Cup d'une grammaire pour AVA
+ *
+ * 10/10/2010
+ * Djebien Tarik
+ *
+ *****************************************************/
+
+package ava.analyseurs;
+import java_cup.runtime.*;
+
+parser code {:
+
+private boolean erreurSyntaxique;
+private String messageErreur;
+
+/** Redéfinition de la méthode parse() pour levée de
+  * ParserException() en cas d'erreur syntaxique.
+  * @throws ParserException en cas d'erreur syntaxique.
+  */
+public Symbol parse() throws Exception, ParserException {
+   Symbol s = null;
+   try {
+     s = super.parse();
+   } catch (Exception e) {
+   	   if (this.erreurSyntaxique)
+     	      throw new ParserException(this.messageErreur);
+           else throw e;
+   }
+   return s;
+}
+
+/** Redéfinition de syntax_error() pour qu'elle affiche
+  * le symbole courant.
+  */
+public void syntax_error(Symbol symboleCourant) {
+    this.erreurSyntaxique = true;
+    this.messageErreur = "erreur syntaxique sur le symbole "
+    + ((Symbole)symboleCourant).getRepresentationTextuelle()
+    + " ligne " + (symboleCourant.left + 1)
+    + " colonne " + (symboleCourant.right + 1);
+}
+
+:} // parser code
+
+/* terminaux (symboles retournés par l'analyseur lexical) */
+
+terminal PROG,DECLINT,DECLBOOL,WRITE,WRITELN,READ;
+terminal IDENT,ENTIER,AFF,FININSTR,SEPVAR,GUILLEMET;
+terminal FORMATENTIER,FORMATBOOLEEN,FORMATCHAINE,STRING,CANCEL;
+terminal IF,THEN,ELSE,ENDIF,WHILE,LOOP,ENDLOOP;
+terminal MODULO,OPENPARENTH,CLOSEPARENTH,MOINS,PLUS,MULT,DIV,UNAIRE;
+terminal DIFF,INFEGAL,INF,SUP,SUPEGAL,EGAL;
+terminal NOT,AND,OR,VRAI,FAUX;
+
+/* non-terminaux de la grammaire */
+
+non terminal CodeSourceAva;
+non terminal enTete, listeDeclaration, listeInstruction ;
+non terminal declarationVariable, declarationDeType, listeDeVariable ;
+non terminal instruction, affectation, impression, lecture, structureConditionnelle, structureIterative ;
+non terminal fonctionStdOut, formatImpression, paramImpression, expression, expressionComparaison ;
+
+/* Niveau de priorité des operateurs */
+             /* OPb */
+precedence left OR;
+precedence left AND;
+precedence left NOT;
+             /* OPc */
+precedence left DIFF,EGAL,INFEGAL,INF,SUP,SUPEGAL;
+             /* OPa */
+precedence left PLUS,MOINS;
+precedence left DIV,MULT;
+precedence left MODULO;
+precedence left UNAIRE;
+precedence left OPENPARENTH,CLOSEPARENTH;
+
+/* axiome */
+start with CodeSourceAva;
+
+/* la grammaire */
+
+CodeSourceAva ::=  enTete listeDeclaration listeInstruction
+;
+
+enTete ::= PROG STRING FININSTR
+;
+
+listeDeclaration ::= /* le mot vide */
+				| declarationVariable listeDeclaration
+;
+
+declarationVariable ::= declarationDeType listeDeVariable FININSTR
+;
+
+declarationDeType ::= DECLINT
+				| DECLBOOL
+;
+
+listeDeVariable ::= IDENT SEPVAR listeDeVariable
+				| IDENT
+;
+
+listeInstruction ::= /* le mot vide */
+             			| instruction listeInstruction
+;
+
+instruction ::= affectation FININSTR
+			| impression FININSTR
+			| lecture FININSTR
+			| structureConditionnelle FININSTR
+			| structureIterative FININSTR
+;
+
+affectation ::= IDENT AFF expression
+;
+
+impression ::= fonctionStdOut OPENPARENTH formatImpression SEPVAR paramImpression CLOSEPARENTH | WRITELN 
+;
+
+fonctionStdOut ::= WRITE | WRITELN
+;
+
+formatImpression ::= FORMATENTIER | FORMATBOOLEEN | FORMATCHAINE
+;
+
+paramImpression ::= expression | STRING
+;
+
+lecture ::= READ IDENT
+;
+
+structureConditionnelle ::= IF expression THEN listeInstruction ENDIF
+					| IF expression THEN listeInstruction ELSE listeInstruction ENDIF
+;
+
+structureIterative ::= WHILE expression LOOP listeInstruction ENDLOOP
+;
+expression ::=   ENTIER
+		      | IDENT
+		      | OPENPARENTH expression CLOSEPARENTH
+		      | expressionComparaison
+		      | VRAI | FAUX
+		      | NOT expression
+		      | expression AND expression
+		      | expression OR expression
+		      | expression PLUS expression
+		      | expression MOINS expression
+		      | expression MULT expression
+		      | expression DIV expression
+		      | expression MODULO expression
+		      | MOINS expression %prec UNAIRE
+;
+
+expressionComparaison ::= expression DIFF expression
+					| expression INFEGAL expression
+					| expression INF expression
+					| expression SUP expression
+					| expression SUPEGAL expression
+					| expression EGAL expression
+;

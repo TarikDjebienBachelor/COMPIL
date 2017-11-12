@@ -1,0 +1,3 @@
+program "variable_undeclared";
+int x;
+x:=b;

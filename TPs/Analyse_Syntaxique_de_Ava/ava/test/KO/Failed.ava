@@ -1,0 +1,6 @@
+-- test de symbole inconnu
+program "Failed";
+   int ^,8;
+   boolean 7false;
+
+write[:$erreur$:]!?;

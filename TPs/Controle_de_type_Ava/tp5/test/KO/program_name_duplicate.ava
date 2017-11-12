@@ -1,0 +1,3 @@
+program "program_name_duplicate";
+int x;
+boolean program_name_duplicate;

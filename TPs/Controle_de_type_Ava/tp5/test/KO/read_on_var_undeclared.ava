@@ -1,0 +1,3 @@
+program "read_on_var_undeclared";
+int x;
+read z;

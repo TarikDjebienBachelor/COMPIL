@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- pour avoir les lettres accentuées -->
+
+<!-- ******************************* -->
+<!-- fichier ant pour le projet Ava -->
+<!-- ******************************* -->
+
+<project default="compil" basedir=".">
+
+<!-- compil : compile la paquetage ava (ne génère pas les analyseurs) -->
+<!-- netExec : supprimer les exécutables -->
+<!-- netAnalyseurs : supprimer les analyseurs java générés -->
+<!-- genDoc : générer la javadoc -->
+<!-- genAnLex : générer l'analyseur lexical -->
+<!-- genAnSynt : générer l'analyseur syntaxique -->
+
+
+
+<description> de quoi compiler les fichiers du TP1 </description>
+
+<!-- propriétés utiles À PARAMÉTRER -->
+
+<!-- répertoire contenant les sources -->
+<property name="sources" location="src"/>
+<!-- répertoire contenant les .class -->
+<property name="classes" location="classes"/>
+<!-- répertoire contenant la javadoc générée -->
+<property name="docs" location="doc"/>
+<!-- répertoire contenant les descripteurs -->
+<property name="specs" location="spec"/>
+
+<!-- nom analyseur lexical -->
+<property name="classeAnLex" value="ScannerAva"/>
+<!-- fichier descripteur analyseur lexical -->
+<property name="descrAnLex" value="anLexAva.lex"/>
+<!-- nom analyseur syntaxique -->
+<property name="classeAnSynt" value="ParserAva"/>
+<!-- fichier descripteur analyseur syntaxique -->
+<property name="descrAnSynt" value="anSyntAva.cup"/>
+<!-- classe définissant le type des symboles -->
+<property name="classeTypeSymboles" value="TypeSymboles"/>
+<!-- classe contenant le main -->
+<property name="classeMain" value="ExecAnLex"/>
+<!-- chemin pour les analyseurs  -->
+<property name="cheminAnalyseurs" value="ava/analyseurs"/>
+<!-- chemin pour les specs  -->
+<property name="cheminSpecs" value="${specs}"/>
+<!-- chemin pour le main  -->
+<property name="cheminMain" value="ava"/>
+
+
+<!-- tâches -->
+
+<!-- ***************  analyseur lexical **************** -->
+
+<!-- génération de l'analyseur lexical -->
+<target name="genAnLex">
+  <!-- génération du .java ds le répertoire des specs -->
+  <java classname="JFlex.Main">
+    <arg file="${cheminSpecs}/${descrAnLex}"/>
+  </java>
+  <!-- déplacement du fichier généré -->
+  <move file="${cheminSpecs}/${classeAnLex}.java" todir="${sources}/${cheminAnalyseurs}"/>
+</target>
+
+
+<!-- ***************  analyseur syntaxique **************** -->
+
+<!-- génération de l'analyseur syntaxique -->
+<target name="genAnSynt">
+  <!-- génération de deux fichiers ds le répertoire ${basedir} -->
+  <java classname="java_cup.Main">
+    <arg line="-parser ${classeAnSynt} -symbols ${classeTypeSymboles} ${cheminSpecs}/${descrAnSynt}"/>
+  </java>
+  <!-- déplacement des fichiers s'ils existent -->
+  <move todir="${sources}/${cheminAnalyseurs}">
+    <fileset dir="${basedir}" includes="${classeAnSynt}.java,${classeTypeSymboles}.java"/>
+  </move>
+</target>
+
+
+<!-- *******************  compilation  ****************** -->
+
+<!-- compilation du main -->
+<target name="compil">
+  <delete includeEmptyDirs="true">
+    <fileset dir="${classes}" includes="**/*"/>
+  </delete>
+  <javac source="1.6" srcdir="${sources}" destdir="${classes}" encoding="ISO8859-1"/> 
+</target>
+
+<!-- ***************** nettoyage ***************** -->
+
+<!-- suppression des exécutables -->
+<target name="netExec">
+  <delete includeEmptyDirs="true">
+    <fileset dir="${classes}" includes="**/*"/>
+  </delete>
+</target>
+
+<!-- suppression des analyseurs générés  -->
+<target name="netAnalyseurs">
+  <delete includeEmptyDirs="true"> 
+    <fileset dir="${sources}/${cheminAnalyseurs}"  
+     includes="${classeAnLex}.java,${classeAnSynt}.java,${classeTypeSymboles}.java" /> 
+  </delete>
+</target>
+
+<!-- **************** génération de doc *********** -->
+<target name="genDoc">
+  <javadoc source="1.6" sourcepath="${sources}" destdir="${docs}" packagenames="${cheminMain}.*" encoding="ISO8859-1"/>
+</target>
+
+
+</project>

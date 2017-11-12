@@ -1,0 +1,146 @@
+package ava.analyseurs;
+import java_cup.runtime.*;
+import ava.arbreAbstrait.*;
+import java.util.LinkedList;
+import java.util.Iterator;
+
+parser code {: 
+private boolean erreurSyntaxique;
+private String messageErreur;
+public Symbol parse() throws Exception, ParserException {
+   Symbol s = null;
+   try {    s = super.parse();} catch (Exception e) {
+   	   if (this.erreurSyntaxique) throw new ParserException(this.messageErreur); 
+           else throw e;
+   }
+   return s;
+} 
+public void syntax_error(Symbol symboleCourant) {
+    this.erreurSyntaxique = true;
+    this.messageErreur = "erreur syntaxique sur le symbole " 
+    + ((Symbole)symboleCourant).getRepresentationTextuelle() 
+    + " ligne " + (symboleCourant.left + 1) 
+    + " colonne " + (symboleCourant.right + 1);
+}
+
+:}
+;
+
+terminal PROG,DECLINT,DECLBOOL,FI,IF,ELSE,THEN,DONE,LOOP,WHILE,READ,WRITE,WRITELN;
+terminal FORMATI,FORMATB,FORMATC,PLUS,MOINS,DIV,MULT,AFFECT;
+terminal FININSTR,SEP,PARO,PARF;
+terminal EGAL,DIFF,INF,SUP,INFEGAL,SUPEGAL,MOD,TRUE,FALSE;
+terminal OR,AND,NOT;
+terminal UNAIRE;
+terminal String CHAINE;
+terminal String IDENT;
+terminal Integer ENTIER;
+non terminal String entete;
+non terminal Programme programme;
+non terminal LinkedList listeIdent;
+non terminal ListeDeclaration listeDeclaration;
+non terminal ListeDeclaration declaration;
+non terminal ListeInstruction listeInstruction;
+non terminal Instruction instruction;
+non terminal Affectation affectation;
+non terminal Expression expr;
+non terminal Lecture lecture;
+non terminal Conditionnelle cond; 
+non terminal Boucle boucle;
+non terminal Impression impression;
+non terminal Comparaison comparaison;
+precedence left OR;
+precedence left AND;
+precedence left NOT;
+precedence left INFEGAL, INF, SUPEGAL, SUP, EGAL, DIFF;
+precedence left PLUS,MOINS;
+precedence left MULT,DIV;
+precedence left MOD;
+precedence left UNAIRE;
+
+programme ::= entete:c listeDeclaration:ld listeInstruction:li {: RESULT = new Programme(c,ld,li);   :};
+entete ::= PROG CHAINE:c FININSTR {: RESULT = c; :};
+listeDeclaration ::= {: RESULT = new ListeDeclaration(); :}
+ 	     | declaration:ld1 listeDeclaration:ld2 {: ld1.concat(ld2); RESULT=ld1; :};
+declaration ::= DECLINT listeIdent:li FININSTR 
+{: ListeDeclaration ld = new ListeDeclaration();
+      Iterator iterateur = li.iterator();
+      while(iterateur.hasNext()) {
+	  DeclarationEntier de = new DeclarationEntier((String)iterateur.next());
+ 	  ld.ajoutDeclEnQueue(de);
+      }
+      RESULT = ld;
+:}		
+             | DECLBOOL listeIdent:li FININSTR 
+{: ListeDeclaration ld = new ListeDeclaration();
+      Iterator iterateur = li.iterator();
+      while(iterateur.hasNext()) {
+	  DeclarationBooleen de = new DeclarationBooleen((String)iterateur.next());
+ 	  ld.ajoutDeclEnQueue(de);
+      }
+      RESULT=ld;
+:}		
+;
+
+listeIdent ::= IDENT:i {: RESULT = new LinkedList(); RESULT.add(i); :}
+	          | IDENT:i SEP listeIdent:li {:li.addFirst(i);RESULT = li;:}
+;
+
+listeInstruction ::= {: RESULT = new ListeInstruction(); :}
+	     | instruction:i FININSTR listeInstruction:li{: li.ajoutInstrEnTete(i); RESULT = li;:}
+;
+
+instruction ::= affectation:a {: RESULT = a; :}
+	     | cond:c                {: RESULT = c; :}
+	     | boucle:b             {: RESULT = b; :}
+	     | lecture:l              {: RESULT = l; :}
+	     | impression:i        {: RESULT = i; :}
+;
+
+affectation ::= IDENT:i AFFECT expr:e {: RESULT = new Affectation(i,e); :} 
+;
+
+expr ::= ENTIER:val                            {: RESULT = new Entier(val); :}
+	|    IDENT:i                                 {: RESULT = new IdentExpr(i); :}
+	|    expr:e1 PLUS expr:e2             {: RESULT = new Addition(e1,e2); :}
+	|    expr:e1 MOINS expr:e2          {: RESULT = new Soustraction(e1,e2); :}
+	|    expr:e1 MULT expr:e2            {: RESULT = new Multiplication(e1,e2); :}
+	|    expr:e1 DIV expr:e2                {: RESULT = new Division(e1,e2); :}
+	|    expr:e1 MOD expr:e2              {: RESULT = new Modulo(e1,e2); :}
+	|    MOINS expr:e                         {: RESULT = new MoinsUnaire(e); :} %prec UNAIRE
+	|    PARO expr:e PARF                  {: RESULT = e; :}
+	|    TRUE                                     {: RESULT = new ExprTrue(); :}
+	|    FALSE                                    {: RESULT = new ExprFalse(); :}
+	|    expr:e1 AND expr:e2               {: RESULT = new Conjonction(e1,e2); :}
+	|    expr:e1 OR expr:e2                 {: RESULT = new Disjonction(e1,e2); :}
+	|    NOT expr:e                             {: RESULT = new Negation(e); :}
+	|    comparaison:c                         {: RESULT = c; :}			
+;
+
+comparaison ::= expr:e1 EGAL expr:e2                {: RESULT = new Egal(e1,e2); :}
+	          |      expr:e1 SUPEGAL expr:e2          {: RESULT = new SuperieurOuEgal(e1,e2); :}
+	          |      expr:e1 SUP expr:e2                  {: RESULT = new SuperieurStrict(e1,e2); :}
+	          |      expr:e1 INF expr:e2                   {: RESULT = new InferieurStrict(e1,e2); :}
+	          |      expr:e1 INFEGAL expr:e2           {: RESULT = new InferieurOuEgal(e1,e2); :}
+	          |      expr:e1 DIFF expr:e2                  {: RESULT = new Different(e1,e2); :}
+;
+
+cond ::= IF expr:e THEN listeInstruction:li FI {: RESULT = new ConditionnelleSimple(e,li); :}
+           | IF expr:e THEN listeInstruction:alors ELSE listeInstruction:sinon FI 
+             {: RESULT = new ConditionnelleAvecAlternative(e,alors,sinon); :}
+;
+
+boucle ::= WHILE expr:e LOOP listeInstruction:li DONE {: RESULT = new Boucle(e,li); :}
+;
+
+lecture ::= READ IDENT:i {: RESULT = new Lecture(i); :}
+;
+
+impression ::= WRITE PARO FORMATB SEP expr:e PARF {: RESULT = new ImpressionBooleenSansSautDeLigne(e); :}
+	       | WRITELN PARO FORMATB SEP expr:e PARF {: RESULT = new ImpressionBooleenAvecSautDeLigne(e); :}
+	       | WRITELN PARO FORMATI SEP expr:e PARF {: RESULT = new ImpressionEntierAvecSautDeLigne(e); :}
+	       | WRITE PARO FORMATI SEP expr:e PARF {: RESULT = new ImpressionEntierSansSautDeLigne(e); :}
+	       | WRITELN PARO FORMATC SEP CHAINE:s PARF {: RESULT = new ImpressionChaineAvecSautDeLigne(s); :}
+	       | WRITE PARO FORMATC SEP CHAINE:s PARF {: RESULT = new ImpressionChaineSansSautDeLigne(s); :}
+	       | WRITELN {: RESULT = new ImpressionSautDeLigne(); :}
+;

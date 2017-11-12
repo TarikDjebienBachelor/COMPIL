@@ -1,0 +1,28 @@
+/*****************************************************
+ * Description pour Cup d'une grammaire pour AVA
+ * Sert uniquement à définir les symboles de AVA
+ *
+ * 20/09/2010 
+ * Djebien Tarik
+ *
+ *****************************************************/
+
+package ava.analyseurs;
+
+/* terminaux (symboles retournés par l'analyseur lexical) */
+
+terminal PROG,DECLINT,DECLBOOL,WRITE,WRITELN,READ,IDENT,ENTIER,AFF,FININSTR,SEPVAR,GUILLEMET,FORMATENTIER,FORMATBOOLEEN,FORMATCHAINE,STRING,CANCEL;
+terminal IF,THEN,ELSE,ENDIF,WHILE,LOOP,ENDLOOP;
+terminal MODULO,OPENPARENTH,CLOSEPARENTH,MOINS,PLUS,MULT,DIV;
+terminal DIFF,INFEGAL,INF,SUP,SUPEGAL,EGAL;
+terminal NOT,AND,OR;
+
+/********* Non utilisé pour le TP1 *************/
+
+/* non-terminaux de la grammaire */
+
+non terminal CodeSourceAva;
+
+/* la grammaire */
+
+CodeSourceAva ::= ;

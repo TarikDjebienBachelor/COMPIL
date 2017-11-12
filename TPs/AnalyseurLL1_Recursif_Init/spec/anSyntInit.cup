@@ -1,0 +1,26 @@
+/*****************************************************
+ * Description pour Cup d'un l'analyseur syntaxique
+ * bidon/
+ * Sert uniquement à gérer TypeSymboles.java 
+ *
+ * 16/12/04 
+ * M. Nebut
+ *
+ *****************************************************/
+
+package init.analyseurs;
+
+/* terminaux (symboles retournés par l'analyseur lexical) */
+
+terminal PROG,DECLINT,READ,DECLLIST,IDENT,ENTIER,AFF,FININSTR,VIRG;
+terminal SEPVAR,DEBLISTE,FINLISTE;
+
+/* non-terminaux de la grammaire */
+
+non terminal texte;
+
+start with texte;
+
+/* la grammaire */
+
+texte ::= ;

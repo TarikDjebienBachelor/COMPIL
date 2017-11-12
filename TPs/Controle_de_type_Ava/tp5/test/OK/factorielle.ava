@@ -1,0 +1,21 @@
+-- calcul de factorielle
+program "Fact";
+int x,xbis;
+boolean fini;
+int res;
+write(%s,"entrer un entier positif\n");
+read x; xbis := x; --memorisation de x
+res := 1; -- résultat
+fini := x = 1;
+if x /= 0 
+then
+  while not fini
+  loop
+     res:= res * x;
+     x := x - 1;
+     fini := x = 1;
+  end loop;
+end if;
+write(%s,"factorielle(");write(%i,xbis);
+write(%s,")="); write(%i,res);
+writeln;

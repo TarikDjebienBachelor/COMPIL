@@ -1,0 +1,8 @@
+pour mettre à jour vos variables d'environnement pour JFlex et Cup : utiliser source /home/enseign/COMPILS5/envm5.sh.
+
+#!/bin/sh
+# pour avoir JFlex et Cup
+export CLASSPATH=.:classes/:../classes/:/usr/share/java/JFlex.jar:/usr/share/java/cup.jar:/home/enseign/COMPILS5/bcel/bcel-5.2.jar:$CLASSPATH
+# pour être sûr d'avoir ant + voir les scripts
+export PATH=/usr/local/bin:scripts:$PATH
+

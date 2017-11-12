@@ -1,0 +1,12 @@
+program "atester";
+int x;
+x := 2;
+if (x=2) then
+writeln(%s,"On passe dans le if");
+x := 3;
+else
+writeln(%s,"On passe dans le else");
+x := 4;
+end if;
+write(%s,"La valeur de x est : ");
+writeln(%i,x);

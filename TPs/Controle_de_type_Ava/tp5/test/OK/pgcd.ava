@@ -1,0 +1,21 @@
+program "pgcd";
+-- calcul de pgcd
+int x,y,x2,y2;
+writeln(%s,"Entrer un entier : ");
+read x; x2 := x;
+writeln(%s,"Entrer un entier : ");
+read y; y2 := y;
+if x > 0 and y > 0 then
+   while x /= y loop
+     if x > y then
+        x := x - y;
+     else
+        y := y - x;
+     end if ;
+   end loop;
+   write(%s,"Le pgcd de ");write(%i,x2);
+   write(%s," et de ");write(%i,y2);
+   write(%s, "est"); write(%i,x); writeln;
+else
+   writeln(%s,"Les entiers doivent etre strictement positifs");
+end if;
